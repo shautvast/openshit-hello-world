@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: List
+metadata:
+  name: hello-world
+items:
+- kind: BuildConfig
+  apiVersion: build.openshift.io/v1
+  metadata:
+    name: hello-world
+    labels:
+      build: hello-world
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'hello-world:latest'
+    resources:
+      limits:
+        cpu: 700m
+        memory: 800Mi
+    succesfulBuildsHistoryLimit: 5
+    failedBuildsHistoryLimit: 5
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: 'open-liberty:19.0.0.9-kernel-java11'
+    postCommit: {}
+    source:
+      type: Binary
+      binary: {}
+    triggers:
+      - type: GitHub
+      github:
+        secret: 6FCAFBB9756846ED
+    runPolicy: Serial
+- kind: ImageStream
+  apiVersion: image.openshift.io/v1
+  metadata:
+    labels:
+      build: hello-world
+    name: hello-world
+  spec: {}

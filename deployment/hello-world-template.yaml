@@ -1,0 +1,110 @@
+kind: Template
+metadata:
+  name: hello-world
+  annotations:
+    description: "Deployment Config for Hello World application"
+apiVersion: v1
+objects:
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    labels:
+      app: hello-world
+      component: hello-world
+    name: hello-world
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      app: hello-world
+      deploymentconfig: hello-world
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        labels:
+          app: hello-world
+          component: hello-world
+          deploymentconfig: hello-world
+      spec:
+        containers:
+        - envFrom:
+          image: ' '
+          imagePullPolicy: Always
+          name: hello-world
+          ports:
+          - containerPort: 9080
+            protocol: TCP
+          - containerPort: 9443
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        scheduler-name: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - imageChangeParams:
+        containerNames:
+        - hello-world
+        from:
+          kind: ImageStreamTag
+          name: hello-world:latest
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    annotations:
+      openshift.io/host.generated: "true"
+    labels:
+      app: hello-world
+      component: hello-world
+    name: hello-world
+  spec:
+    port:
+      targetPort: 9080-tcp
+    to:
+      kind: Service
+      name: hello-world
+      weight: 100
+    wildcardPolicy: None
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    labels:
+      app: hello-world
+      component: hello-world
+    name: hello-world
+  spec:
+    ports:
+    - name: 9080-tcp
+      port: 9080
+      protocol: TCP
+      targetPort: 9080
+    - name: 9443-tcp
+      port: 9443
+      protocol: TCP
+      targetPort: 9080
+    selector:
+      app: hello-world
+      deploymentconfig: hello-world
+    sessionAffinity: None
+    type: ClusterIP
